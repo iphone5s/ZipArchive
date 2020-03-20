@@ -829,10 +829,11 @@ BOOL _fileIsSymbolicLink(const unz_file_info *fileInfo);
                 success &= [zipArchive writeFileAtPath:fullFilePath withFileName:fileName compressionLevel:compressionLevel password:password AES:aes];
             } else {
                 // directory
-                if (![fileManager enumeratorAtPath:fullFilePath].nextObject) {
-                    // empty directory
-                    success &= [zipArchive writeFolderAtPath:fullFilePath withFolderName:fileName withPassword:password];
-                }
+//                if (![fileManager enumeratorAtPath:fullFilePath].nextObject) {
+//                    // empty directory
+//                    success &= [zipArchive writeFolderAtPath:fullFilePath withFolderName:fileName withPassword:password];
+//                }
+                success &= [zipArchive writeFolderAtPath:fullFilePath withFolderName:fileName withPassword:password];
             }
             if (progressHandler) {
                 complete++;
