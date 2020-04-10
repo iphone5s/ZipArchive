@@ -671,8 +671,9 @@ BOOL _fileIsSymbolicLink(const unz_file_info *fileInfo);
             crc_ret = unzCloseCurrentFile(zip);
             if (crc_ret == MZ_CRC_ERROR) {
                 // CRC ERROR
-                success = NO;
-                break;
+                //临时忽略crc错误
+//                success = NO;
+//                break;
             }
             ret = unzGoToNextFile(zip);
             
