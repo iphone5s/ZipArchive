@@ -747,6 +747,82 @@ BOOL _fileIsSymbolicLink(const unz_file_info *fileInfo);
     }
     return success;
 }
+//自定义
++ (NSDictionary *)getInfoPlistAtPath:(NSString *)path {
+    NSDictionary *infoPlist = nil;
+    // Begin opening
+    zipFile zip = unzOpen(path.fileSystemRepresentation);
+    if (zip == NULL) {
+        return nil;
+    }
+
+    int ret = unzGoToFirstFile(zip);
+    if (ret == UNZ_OK) {
+        do {
+            ret = unzOpenCurrentFile(zip);
+            if (ret != UNZ_OK) {
+                // attempting with an arbitrary password to workaround `unzOpenCurrentFile` limitation on AES encrypted files
+                ret = unzOpenCurrentFilePassword(zip, "");
+                unzCloseCurrentFile(zip);
+                if (ret == UNZ_OK || ret == MZ_PASSWORD_ERROR) {
+                    
+                }
+                break;
+            }
+            unz_file_info fileInfo = {};
+            ret = unzGetCurrentFileInfo(zip, &fileInfo, NULL, 0, NULL, 0, NULL, 0);
+            
+            char *filename = (char *)malloc(fileInfo.size_filename + 1);
+            if (filename == NULL)
+            {
+                
+                break;
+            }
+            
+            unzGetCurrentFileInfo(zip, &fileInfo, filename, fileInfo.size_filename + 1, NULL, 0, NULL, 0);
+            filename[fileInfo.size_filename] = '\0';
+            
+            NSString * strPath = [SSZipArchive _filenameStringWithCString:filename
+                                                          version_made_by:fileInfo.version
+                                                     general_purpose_flag:fileInfo.flag
+                                                                     size:fileInfo.size_filename];
+            free(filename);
+            
+            if ([strPath hasPrefix:@"__MACOSX/"]) {
+                // ignoring resource forks: https://superuser.com/questions/104500/what-is-macosx-folder
+                unzCloseCurrentFile(zip);
+                ret = unzGoToNextFile(zip);
+                continue;
+            }
+            
+            if (strPath.pathComponents.count == 3 && [strPath.lastPathComponent isEqualToString:@"Info.plist"]) {
+
+                void *buffer = (char *)malloc(fileInfo.uncompressed_size);
+                
+                int readBytes = unzReadCurrentFile(zip, buffer, fileInfo.uncompressed_size);
+                unzCloseCurrentFile(zip);
+                if (readBytes == fileInfo.uncompressed_size) {
+                    NSData *infoData = [[NSData alloc]initWithBytes:buffer length:fileInfo.uncompressed_size];
+                    infoPlist = [NSPropertyListSerialization propertyListWithData:infoData options:NSPropertyListMutableContainersAndLeaves format:nil error:nil];
+                    break;
+                }
+            }
+            
+            unzCloseCurrentFile(zip);
+            if (ret != UNZ_OK) {
+                break;
+            } else if ((fileInfo.flag & MZ_ZIP_FLAG_ENCRYPTED) == 1) {
+                
+                break;
+            }
+
+            ret = unzGoToNextFile(zip);
+        } while (ret == UNZ_OK);
+    }
+
+    unzClose(zip);
+    return infoPlist;
+}
 
 #pragma mark - Zipping
 + (BOOL)createZipFileAtPath:(NSString *)path withFilesAtPaths:(NSArray<NSString *> *)paths
