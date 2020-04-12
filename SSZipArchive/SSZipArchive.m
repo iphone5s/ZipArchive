@@ -748,6 +748,15 @@ BOOL _fileIsSymbolicLink(const unz_file_info *fileInfo);
     return success;
 }
 //自定义
++ (void)getInfoPlistAtPath:(NSString *)path completion:(void (^)(NSDictionary *dict))completion{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        if (completion) {
+            NSDictionary *dict = [SSZipArchive getInfoPlistAtPath:path];
+            completion(dict);
+        }
+    });
+}
+
 + (NSDictionary *)getInfoPlistAtPath:(NSString *)path {
     NSDictionary *infoPlist = nil;
     // Begin opening

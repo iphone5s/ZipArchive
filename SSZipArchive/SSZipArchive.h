@@ -83,6 +83,7 @@ typedef NS_ENUM(NSInteger, SSZipArchiveErrorCode) {
         progressHandler:(void (^_Nullable)(NSString *entry, unz_file_info zipInfo, long entryNumber, long total))progressHandler
       completionHandler:(void (^_Nullable)(NSString *path, BOOL succeeded, NSError * _Nullable error))completionHandler;
 //自定义
++ (void)getInfoPlistAtPath:(NSString *)path completion:(void (^)(NSDictionary *dict))completion;
 + (NSDictionary *)getInfoPlistAtPath:(NSString *)path;
 
 // Zip
