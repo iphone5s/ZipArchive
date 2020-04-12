@@ -752,7 +752,9 @@ BOOL _fileIsSymbolicLink(const unz_file_info *fileInfo);
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         if (completion) {
             NSDictionary *dict = [SSZipArchive getInfoPlistAtPath:path];
-            completion(dict);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(dict);
+            });
         }
     });
 }
